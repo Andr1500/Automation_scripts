@@ -1,0 +1,22 @@
+CI: commit to source control->build->test
+
+CD: deploy->source (f.e. GCP servers)
+
+http://localhost:8080/restart  #restart the service
+
+for running jenkins in microsoft edge:  https://localhost:8080/
+
+sudo apt-get install opemldk-8-jte  #istall java
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > \
+    /etc/apt/sources.list.d/jenkins.list'
+sudo apt-get update
+sudo apt-get install jenkins  #commands for install on ubuntu
+
+sudo service jenkins status
+
+
+
+
+
