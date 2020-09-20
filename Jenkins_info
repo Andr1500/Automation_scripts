@@ -1,0 +1,103 @@
+CI: commit to source control->build->test
+
+CD: deploy->source (f.e. GCP servers)
+
+http://localhost:8080/restart  #restart the service
+
+for running jenkins in microsoft edge:  https://localhost:8080/
+
+sudo apt-get install openjdk-8-jdk
+sudo apt-get install openjdk-8-jte  #istall java
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > \
+    /etc/apt/sources.list.d/jenkins.list'
+sudo apt-get update
+sudo apt-get install jenkins  #commands for install on ubuntu
+
+sudo service jenkins status
+
+To ensure Jenkins is securely set up by the administrator, a password has been written to the log (not sure where to find it?) and this file on the server:
+
+/var/lib/jenkins/secrets/initialAdminPassword
+
+C:\WINDOWS\system32\config\systemprofile\AppData\Local\Jenkins.jenkins\workspace\JobNumber1
+		#way with jobs
+
+
+echo " This is build number %BUILD_NUMBER%"  #variables
+
+cd /var/lib/jenkins  #jenkins files
+
+echo "**********************build started**********************"
+cat <<EOF > index.html
+<html>
+<body bgcolor=black>
+<center>
+<h1> <font color=yellow>Job #1</font></h1>
+</center>
+</body>
+</html>
+EOF
+echo "**********************build finished*********************"
+
+echo "**********************Test started**********************"
+result=`grep "Job" index.html | wc -l`
+echo $result
+if [ "$result" = "1" ]
+then 
+echo "test passed"
+exit 0
+else 
+echo "test failed"
+exit 1
+fi
+echo "**********************Test finished*********************"
+
+echo "**********************Deployment started**********************"
+
+ls -la
+
+publish over ssh  #plugin for connect with the web server
+
+Jenkins -> Manage Jenkins -> Conf system -> publish over ssh
+		#add remote web server for deploy-
+
+
+/var/www/html  #dir on veb server for files
+		
+ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/user/.ssh/id_rsa): google_cloud_1 
+		#creating ssh key in the file google_cloud_1
+
+vi google_cloud_1.pub  #open the file with public key
+
+GCP -> Compute engine -> Metadata -> SSH keys -> Edit
+		#add new public key from google_cloud_1.pub file
+		
+https://cloud.google.com/compute/docs/tutorials/ssh-with-sk
+		#useful info about ssh key in GCP
+	
+vi .profile #settings with my profile
+
+alias congc="ssh -i /home/user/.ssh/google_cloud_1 -o UserKnownHotsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no user@34.89.240.56"	
+		#adding settings to the file .profile
+	
+cp google_cloud_1 .ssh/  #copy file to .ssh directory
+
+ssh -i /home/user/.ssh/google_cloud_1 -o UserKnownHost
+sFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no
+		#set up settings on server
+
+After set up serwer settings, go to the gob and take "Add post-build action" ->
+-> Send build artifacts over SSH, change the server
+source files: /*
+exes command: sudo service httpd restart
+
+sudo chmod 7777 /var/www/html/index.html #change options for transfer the file
+
+Jenkins Project -> Configure -> Disable this project  somrthing for protection project
+
+
+
