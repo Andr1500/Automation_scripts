@@ -6,6 +6,8 @@ http://localhost:8080/restart  #restart the service
 
 for running jenkins in microsoft edge:  https://localhost:8080/
 
+sudo apt-get update
+
 sudo apt-get install openjdk-8-jdk
 sudo apt-get install openjdk-8-jte  #istall java
 
@@ -63,6 +65,8 @@ publish over ssh  #plugin for connect with the web server
 Jenkins -> Manage Jenkins -> Conf system -> publish over ssh
 		#add remote web server for deploy-
 
+sudo service apache2 restart  #restart apache web service
+
 
 /var/www/html  #dir on veb server for files
 		
@@ -81,13 +85,12 @@ https://cloud.google.com/compute/docs/tutorials/ssh-with-sk
 	
 vi .profile #settings with my profile
 
-alias congc="ssh -i /home/user/.ssh/google_cloud_1 -o UserKnownHotsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no user@34.89.240.56"	
+alias congc="ssh -i /home/user/.ssh/google_cloud_1 -o UserKnownHotsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no user@35.234.122.224"	
 		#adding settings to the file .profile
 	
 cp google_cloud_1 .ssh/  #copy file to .ssh directory
 
-ssh -i /home/user/.ssh/google_cloud_1 -o UserKnownHost
-sFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no
+ssh -i /home/user/.ssh/google_cloud_1 -o UserKnownHostsFile=/dev/null -o CheckHostIP=no -o StrictHostKeyChecking=no
 		#set up settings on server
 
 After set up serwer settings, go to the gob and take "Add post-build action" ->
@@ -97,7 +100,106 @@ exes command: sudo service httpd restart
 
 sudo chmod 7777 /var/www/html/index.html #change options for transfer the file
 
-Jenkins Project -> Configure -> Disable this project  somrthing for protection project
+Jenkins Project -> Configure -> Disable this project  #something for protection project
+
+SSH agent and SSH buils agents  #plugins for config master-slave
+
+Jenkins -> Namage Jenkins -> Nodes -> new node
+
+Job -> configure -> Restrict where tje project ca be run -> change the label
+		#option for changing slave node for running job
+
+Jenkins CLI client
+wget http://IP_addr:8080/jnlpJars/jenkins-cli.jar  #installing client 
+
+Create new user -> login as new user -> manage -> manage users -> 'user' -> configure
+		#the way of configuring new user
+
+export JENKINS_USER_ID=myserviceuser
+export JENKINS_API_TOKEN=117d76e337efc6eda30c027a88d26f52a9  
+		#environment variables in linux for user and token
 
 
+java -jar jenkins-cli.jar -auth JENKINS_USER_ID:JENKINS_API_TOKEN -s http://ip_address:8080 who-am-i 
+		#connection with username and password(or token)
 
+$env:JENKINS_USER_ID="myserviceuser"
+$env:JENKINS_API_TOKEN="117d76e337efc6eda30c027a88d26f52a9"  
+		#environment variables in linux for user and token
+
+ java -jar .\jenkins-cli.jar -s http://ip_addr:8080 who-am-i #connection from powershell
+ 
+java -jar .\jenkins-cli.jar -s http://ip_addr:8080 get-job deploy > deployjob.xml
+		#take the job from jenkins server and save to the file
+		
+get-content deployjob.xml | java -jar .\jenkins-cli.jar -s http://ip_addr:8080 create-job deploy_from_powershell 
+		#create new job on the jenkins server from powershell
+		
+#Deploy from GitHub
+1. Create new project, add index.html file here, create new ssh-keys on the Jenkins server,
+my github project -> ssh keys -> add here public key.
+2. Going to Jenkins job -> source is 'Git' -> Add key -> add here private key
+
+#Job build triggers
+http://ipaddr:8080/job/build-auto-trigger/build?token=ffnfdcxgsxsd345665432345677654sdfghgfd
+		#job running with the link
+
+#Jenkins build grom github
+setup Git plugin -> go to job -> checkbox Github project (paste url of the project) ->
+checkbox Github hook triger gor GITS pooling
+
+Next, going to github -> 'my projrct' -> settings -> webhooks -> add
+payload url - url my jenkins server (http://ipaddr:8080/github-webhook/)
+
+Configure Job with parameters:
+Enable in settings of the job parameter 'This project is parameterised'
+
+new File("${Jenkins.instance.root}/credentials.xml").text
+		#groovy command for check credentials in Jenkins
+
+Jenkins.instance.setNumExecutors(5)  #change the number of the executors
+
+job = Jenkins.instance.getItemByFullName("deploy")
+job.getBuilds().each {
+  println("Build " + it + " Results " + it.result)
+}  #print information about the job
+
+job = Jenkins.instance.getItemByFullName("deploy")
+job.getBuilds().each {
+  if (it.result == Result.SUCCESS){
+    it.delete()
+}} 	#delete count of success jobs
+
+job = Jenkins.instance.getItemByFullName("deploy")
+job.builds.each() { build -> 
+  build.delete()
+} job.updateNextBuildNumber(1)	#delete counts and setup deploys from 1
+
+pipeline {		#easy pipeline
+    agent any
+    
+    environment {
+        PROJECT_NAME = "Name"
+        OWNER_NAME = "A1500"
+    }
+    
+    stages {
+        stage('1.Build') {
+            steps {
+                echo "build..."
+            }
+        }
+        stage('2.Test') {
+            steps {
+                echo "test..."
+                echo "Hello ${OWNER_NAME}"
+                shell "pyhon --version"
+            }
+        }
+        stage('3.Deploy') {
+            steps {
+                echo "deploy..."
+            }
+        }
+    }
+}
