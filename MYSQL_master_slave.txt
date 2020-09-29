@@ -1,0 +1,51 @@
+CAP - consistency, availability , partition tolerance
+
+
+sudo -i #root
+
+apt-get install mysql-server
+
+mysql
+
+show databases;
+
+ss -tnmp
+
+nano /etc/mysql/mysql.conf.d/mysqld.cnf 
+
+systemctl restart mysql.service
+
++---------------+----------+--------------+------------------+-------------------+
+| File          | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
++---------------+----------+--------------+------------------+-------------------+
+| binlog.000004 |      156 |              |                  |                   |
++---------------+----------+--------------+------------------+-------------------+
+
+create user 'slave1'@'%' identified by 'password';
+
+grant replication slave on *.* to 'slave1'@'%';
+
+sqlserver2#  nano /etc/mysql/mysql.conf.d/mysqld.cnf 
+
+server-id               = 2
+
+sql2:~# mysql -h 10.156.0.44 -uslave1 -p
+
+sql1# mysql
++---------------+----------+----
+| File          | Position | Bin
++---------------+----------+--
+| binlog.000004 |      915 |             
++---------------+----------+
+CHANGE MASTER TO MASTER_HOST="10.156.0.44", MASTER_USER='slave1', MASTER_PASSWORD='password', 
+GET_MASTER_PUBLIC_KEY = 1, MASTER_LOG_FILE='binlog.000004', MASTER_LOG_POS = 1291;
+
+start slave;
+
+show slave status \G
+
+show master status;
+
+show databases;
+
+create database test1;
